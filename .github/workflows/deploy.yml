@@ -1,0 +1,31 @@
+name: deploy
+
+on:
+  workflow_call:
+
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup operator environment
+        uses: charmed-kubernetes/actions-operator@main
+        with:
+          provider: microk8s
+          channel: 1.25-strict/stable
+          juju-channel: 3.0/candidate
+          microk8s-addons: hostpath-storage dns rbac metallb:10.64.140.40-10.64.140.49
+      - name: Install dependencies
+        run: |
+          sudo snap install --classic terraform
+          sudo snap install --classic juju-wait
+      - name: Apply terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve -parallelism=1
+          juju model-config -m openstack automatically-retry-hooks=true
+          juju-wait -vw -m openstack -r 10
+          juju status -m openstack
