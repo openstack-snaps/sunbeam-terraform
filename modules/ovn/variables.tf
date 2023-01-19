@@ -42,8 +42,8 @@ variable "relay_scale" {
   default     = 1
 }
 
-variable "vault" {
-  description = "Application name of Vault operator"
+variable "ca" {
+  description = "Application name of certificate authority operator"
   type        = string
   default     = ""
 }
