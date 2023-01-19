@@ -212,6 +212,11 @@ resource "juju_application" "certificate-authority" {
     name    = "tls-certificates-operator"
     channel = "edge"
   }
+
+  config = {
+    generate-self-signed-certificates = true
+    ca-common-name                    = "internal-ca"
+  }
 }
 
 module "ovn" {
