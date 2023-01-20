@@ -69,7 +69,7 @@ resource "juju_integration" "ovn-central-to-ovn-relay" {
   }
 }
 
-resource "juju_integration" "ovn-central-to-vault" {
+resource "juju_integration" "ovn-central-to-ca" {
   model = var.model
 
   application {
@@ -78,12 +78,12 @@ resource "juju_integration" "ovn-central-to-vault" {
   }
 
   application {
-    name     = var.vault
-    endpoint = "insecure-certificates"
+    name     = var.ca
+    endpoint = "certificates"
   }
 }
 
-resource "juju_integration" "ovn-relay-to-vault" {
+resource "juju_integration" "ovn-relay-to-ca" {
   count = var.relay != "" ? 1 : 0
   model = var.model
 
@@ -93,8 +93,8 @@ resource "juju_integration" "ovn-relay-to-vault" {
   }
 
   application {
-    name     = var.vault
-    endpoint = "insecure-certificates"
+    name     = var.ca
+    endpoint = "certificates"
   }
 }
 

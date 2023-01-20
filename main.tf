@@ -203,16 +203,19 @@ resource "juju_application" "traefik-public" {
 }
 
 
-# application:Vault
-# juju deploy --channel latest/stable --trust icey-vault-k8s vault
-resource "juju_application" "vault" {
-  name  = "vault"
+resource "juju_application" "certificate-authority" {
+  name  = "certificate-authority"
   trust = true
   model = juju_model.sunbeam.name
 
   charm {
-    name    = "icey-vault-k8s"
-    channel = "latest/stable"
+    name    = "tls-certificates-operator"
+    channel = "edge"
+  }
+
+  config = {
+    generate-self-signed-certificates = true
+    ca-common-name                    = "internal-ca"
   }
 }
 
@@ -223,7 +226,7 @@ module "ovn" {
   scale       = 1
   relay       = true
   relay_scale = 1
-  vault       = juju_application.vault.name
+  ca          = juju_application.certificate-authority.name
 }
 
 
@@ -245,7 +248,7 @@ resource "juju_integration" "ovn-central-to-neutron" {
 
 
 # juju integrate neutron vault
-resource "juju_integration" "neutron-to-vault" {
+resource "juju_integration" "neutron-to-ca" {
   model = juju_model.sunbeam.name
 
   application {
@@ -254,8 +257,8 @@ resource "juju_integration" "neutron-to-vault" {
   }
 
   application {
-    name     = juju_application.vault.name
-    endpoint = "insecure-certificates"
+    name     = juju_application.certificate-authority.name
+    endpoint = "certificates"
   }
 }
 
