@@ -38,7 +38,36 @@ resource "juju_application" "service" {
   units = var.scale
 }
 
-resource "juju_integration" "service-to-mysql" {
+resource "juju_application" "mysql_router" {
+  name  = "${var.name}-mysql-router"
+  trust = true
+  model = var.model
+
+  charm {
+    name    = "mysql-router-k8s"
+    channel = "latest/edge"
+    series  = "jammy"
+  }
+
+  units = var.scale
+}
+
+
+resource "juju_integration" "mysql-router-to-mysql" {
+  model = var.model
+
+  application {
+    name     = juju_application.mysql_router.name
+    endpoint = "backend-database"
+  }
+
+  application {
+    name     = var.mysql
+    endpoint = "database"
+  }
+}
+
+resource "juju_integration" "service-to-mysql-router" {
   model = var.model
 
   application {
@@ -47,7 +76,7 @@ resource "juju_integration" "service-to-mysql" {
   }
 
   application {
-    name     = var.mysql
+    name     = juju_application.mysql_router.name
     endpoint = "database"
   }
 }
