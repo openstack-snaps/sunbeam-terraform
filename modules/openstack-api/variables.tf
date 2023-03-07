@@ -57,6 +57,12 @@ variable "keystone" {
   default     = ""
 }
 
+variable "keystone-credentials" {
+  description = "Keystone operator to integrate with"
+  type        = string
+  default     = ""
+}
+
 variable "ingress-internal" {
   description = "Ingress operator to integrate with for internal endpoints"
   type        = string

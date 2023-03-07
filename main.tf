@@ -70,6 +70,13 @@ module "neutron-mysql" {
   channel = var.mysql_channel
 }
 
+module "horizon-mysql" {
+  source  = "./modules/mysql"
+  model   = juju_model.sunbeam.name
+  name    = "horizon-mysql"
+  channel = var.mysql_channel
+}
+
 module "rabbitmq" {
   source  = "./modules/rabbitmq"
   model   = juju_model.sunbeam.name
@@ -113,6 +120,18 @@ module "nova" {
   ingress-internal = juju_application.traefik-internal.name
   ingress-public   = juju_application.traefik-public.name
   scale            = 1
+}
+
+module "horizon" {
+  source               = "./modules/openstack-api"
+  charm                = "horizon-k8s"
+  name                 = "horizon"
+  model                = juju_model.sunbeam.name
+  channel              = var.openstack_channel
+  mysql                = module.horizon-mysql.name
+  keystone-credentials = module.keystone.name
+  ingress-internal     = juju_application.traefik-internal.name
+  ingress-public       = juju_application.traefik-public.name
 }
 
 # TODO: specific module for nova?
