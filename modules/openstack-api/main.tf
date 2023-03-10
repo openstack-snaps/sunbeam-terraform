@@ -96,7 +96,7 @@ resource "juju_integration" "service-to-keystone" {
 
   application {
     name     = juju_application.service.name
-    endpoint = "cloud-credentials"
+    endpoint = "identity-credentials"
   }
 }
 
