@@ -85,6 +85,21 @@ resource "juju_integration" "keystone-to-service" {
   }
 }
 
+resource "juju_integration" "service-to-keystone" {
+  for_each = var.keystone-credentials == "" ? {} : { target = var.keystone-credentials }
+  model    = var.model
+
+  application {
+    name     = each.value
+    endpoint = "identity-credentials"
+  }
+
+  application {
+    name     = juju_application.service.name
+    endpoint = "cloud-credentials"
+  }
+}
+
 # juju integrate traefik-public glance
 resource "juju_integration" "traefik-public-to-service" {
   model = var.model
