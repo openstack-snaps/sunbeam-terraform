@@ -35,45 +35,10 @@ resource "juju_model" "sunbeam" {
   }
 }
 
-module "placement-mysql" {
+module "mysql" {
   source  = "./modules/mysql"
   model   = juju_model.sunbeam.name
-  name    = "placement-mysql"
-  channel = var.mysql_channel
-}
-
-module "glance-mysql" {
-  source  = "./modules/mysql"
-  model   = juju_model.sunbeam.name
-  name    = "glance-mysql"
-  channel = var.mysql_channel
-}
-
-module "keystone-mysql" {
-  source  = "./modules/mysql"
-  model   = juju_model.sunbeam.name
-  name    = "keystone-mysql"
-  channel = var.mysql_channel
-}
-
-module "nova-mysql" {
-  source  = "./modules/mysql"
-  model   = juju_model.sunbeam.name
-  name    = "nova-mysql"
-  channel = var.mysql_channel
-}
-
-module "neutron-mysql" {
-  source  = "./modules/mysql"
-  model   = juju_model.sunbeam.name
-  name    = "neutron-mysql"
-  channel = var.mysql_channel
-}
-
-module "horizon-mysql" {
-  source  = "./modules/mysql"
-  model   = juju_model.sunbeam.name
-  name    = "horizon-mysql"
+  name    = "mysql"
   channel = var.mysql_channel
 }
 
@@ -91,10 +56,10 @@ module "glance" {
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
   rabbitmq         = module.rabbitmq.name
-  mysql            = module.glance-mysql.name
+  mysql            = module.mysql.name
   keystone         = module.keystone.name
-  ingress-internal = juju_application.traefik-internal.name
-  ingress-public   = juju_application.traefik-public.name
+  ingress-internal = juju_application.traefik.name
+  ingress-public   = juju_application.traefik.name
 }
 
 module "keystone" {
@@ -103,9 +68,9 @@ module "keystone" {
   name             = "keystone"
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
-  mysql            = module.keystone-mysql.name
-  ingress-internal = juju_application.traefik-internal.name
-  ingress-public   = juju_application.traefik-public.name
+  mysql            = module.mysql.name
+  ingress-internal = juju_application.traefik.name
+  ingress-public   = juju_application.traefik.name
 }
 
 module "nova" {
@@ -115,10 +80,10 @@ module "nova" {
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
   rabbitmq         = module.rabbitmq.name
-  mysql            = module.nova-mysql.name
+  mysql            = module.mysql.name
   keystone         = module.keystone.name
-  ingress-internal = juju_application.traefik-internal.name
-  ingress-public   = juju_application.traefik-public.name
+  ingress-internal = juju_application.traefik.name
+  ingress-public   = juju_application.traefik.name
   scale            = 1
 }
 
@@ -128,10 +93,10 @@ module "horizon" {
   name                 = "horizon"
   model                = juju_model.sunbeam.name
   channel              = var.openstack_channel
-  mysql                = module.horizon-mysql.name
+  mysql                = module.mysql.name
   keystone-credentials = module.keystone.name
-  ingress-internal     = juju_application.traefik-internal.name
-  ingress-public       = juju_application.traefik-public.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
 }
 
 # TODO: specific module for nova?
@@ -144,7 +109,7 @@ resource "juju_integration" "nova-api-to-mysql" {
   }
 
   application {
-    name     = module.nova-mysql.name
+    name     = module.mysql.name
     endpoint = "database"
   }
 }
@@ -158,7 +123,7 @@ resource "juju_integration" "nova-cell-to-mysql" {
   }
 
   application {
-    name     = module.nova-mysql.name
+    name     = module.mysql.name
     endpoint = "database"
   }
 }
@@ -170,10 +135,10 @@ module "neutron" {
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
   rabbitmq         = module.rabbitmq.name
-  mysql            = module.neutron-mysql.name
+  mysql            = module.mysql.name
   keystone         = module.keystone.name
-  ingress-internal = juju_application.traefik-internal.name
-  ingress-public   = juju_application.traefik-public.name
+  ingress-internal = juju_application.traefik.name
+  ingress-public   = juju_application.traefik.name
   scale            = 1
 }
 
@@ -183,17 +148,15 @@ module "placement" {
   name             = "placement"
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
-  mysql            = module.neutron-mysql.name
+  mysql            = module.mysql.name
   keystone         = module.keystone.name
-  ingress-internal = juju_application.traefik-internal.name
-  ingress-public   = juju_application.traefik-public.name
+  ingress-internal = juju_application.traefik.name
+  ingress-public   = juju_application.traefik.name
   scale            = 1
 }
 
-# application:traefik
-# juju deploy --channel latest/edge --trust traefik-k8s traefik-internal
-resource "juju_application" "traefik-internal" {
-  name  = "traefik-internal"
+resource "juju_application" "traefik" {
+  name  = "traefik"
   trust = true
   model = juju_model.sunbeam.name
 
@@ -204,23 +167,6 @@ resource "juju_application" "traefik-internal" {
 
   units = 1
 }
-
-
-# application:traefik
-# juju deploy --channel latest/edge --trust traefik-k8s traefik-public
-resource "juju_application" "traefik-public" {
-  name  = "traefik-public"
-  trust = true
-  model = juju_model.sunbeam.name
-
-  charm {
-    name    = "traefik-k8s"
-    channel = "1.0/stable"
-  }
-
-  units = 1
-}
-
 
 resource "juju_application" "certificate-authority" {
   name  = "certificate-authority"
