@@ -1,3 +1,3 @@
 # Terraform module for OVN deployment
 
-TBC
+Deployment of OVN (Open Virtual Network) Charmed K8S Operators under Juju.

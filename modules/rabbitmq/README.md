@@ -1,3 +1,3 @@
 # RabbitMQ K8S Terraform module
 
-TBC
+Deployment of RabbitMQ Charmed K8S Operators under Juju.

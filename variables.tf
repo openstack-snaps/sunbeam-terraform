@@ -14,7 +14,7 @@
 # limitations under the License.
 
 variable "openstack_channel" {
-  description = "OpenStack channel for deployment"
+  description = "Operator channel for OpenStack deployment"
   default     = "yoga/beta"
 }
 

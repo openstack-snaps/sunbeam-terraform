@@ -1,3 +1,3 @@
 # MySQL Operator Terraform module
 
-TBC
+Deployment of MySQL Charmed K8S Operators under Juju.
