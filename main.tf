@@ -33,6 +33,9 @@ resource "juju_model" "sunbeam" {
     name   = var.cloud
     region = "localhost"
   }
+
+  credential = var.credential
+  config     = var.config
 }
 
 module "mysql" {
