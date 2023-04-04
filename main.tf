@@ -35,6 +35,7 @@ resource "juju_model" "sunbeam" {
   }
 
   credential = var.credential
+  config     = var.config
 }
 
 module "mysql" {

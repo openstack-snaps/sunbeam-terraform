@@ -46,5 +46,10 @@ variable "cloud" {
 # https://github.com/juju/terraform-provider-juju/issues/147
 variable "credential" {
   description = "Name of credential to use for deployment"
-  default     = "microk8s-creds"
+  default     = ""
+}
+
+variable "config" {
+  description = "Set configuration on model"
+  default     = {}
 }
