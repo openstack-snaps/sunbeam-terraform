@@ -166,6 +166,7 @@ resource "juju_application" "traefik" {
   charm {
     name    = "traefik-k8s"
     channel = "1.0/stable"
+    series  = "focal"
   }
 
   units = 1
