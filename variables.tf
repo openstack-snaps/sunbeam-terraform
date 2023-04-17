@@ -20,7 +20,7 @@ variable "openstack_channel" {
 
 variable "mysql_channel" {
   description = "Operator channel for MySQL deployment"
-  default     = "edge"
+  default     = "8.0/stable"
 }
 
 variable "rabbitmq_channel" {
