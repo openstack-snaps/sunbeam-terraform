@@ -21,7 +21,7 @@ variable "name" {
 
 variable "channel" {
   description = "MySQL K8S operator channel"
-  default     = "edge"
+  default     = "8.0/stable"
   type        = string
 }
 
