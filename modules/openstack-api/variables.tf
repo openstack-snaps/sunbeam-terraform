@@ -51,6 +51,11 @@ variable "mysql" {
   type        = string
 }
 
+variable "mysql_router_channel" {
+  description = "Operator channel for MySQL Router deployment"
+  default     = "8.0/edge"
+}
+
 variable "keystone" {
   description = "Keystone operator to integrate with"
   type        = string

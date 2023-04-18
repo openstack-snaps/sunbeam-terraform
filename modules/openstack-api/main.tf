@@ -40,18 +40,16 @@ resource "juju_application" "service" {
 
 resource "juju_application" "mysql_router" {
   name  = "${var.name}-mysql-router"
-  trust = true
   model = var.model
 
   charm {
     name    = "mysql-router-k8s"
-    channel = "latest/edge"
+    channel = var.mysql_router_channel
     series  = "jammy"
   }
 
   units = var.scale
 }
-
 
 resource "juju_integration" "mysql-router-to-mysql" {
   model = var.model
@@ -156,5 +154,100 @@ resource "juju_integration" "traefik-internal-to-service" {
   application {
     name     = juju_application.service.name
     endpoint = "ingress-internal"
+  }
+}
+
+# TODO: specific module for nova?
+resource "juju_application" "nova_api_mysql_router" {
+  count = var.name == "nova" ? 1 : 0
+  name  = "nova-api-mysql-router"
+  model = var.model
+
+  charm {
+    name    = "mysql-router-k8s"
+    channel = var.mysql_router_channel
+    series  = "jammy"
+  }
+
+
+  units = var.scale
+}
+
+resource "juju_integration" "nova-api-to-mysql-router" {
+  count = var.name == "nova" ? 1 : 0
+  model = var.model
+
+  application {
+    name     = juju_application.service.name
+    endpoint = "api-database"
+  }
+
+  application {
+    # name     = juju_application.mysql_router.name
+    name     = juju_application.nova_api_mysql_router[0].name
+    endpoint = "database"
+  }
+}
+
+resource "juju_integration" "nova-api-router-to-mysql" {
+  count = var.name == "nova" ? 1 : 0
+  model = var.model
+
+  application {
+    name     = var.mysql
+    endpoint = "database"
+  }
+
+  application {
+    # name     = juju_application.mysql_router.name
+    name     = juju_application.nova_api_mysql_router[0].name
+    endpoint = "backend-database"
+  }
+}
+
+resource "juju_application" "nova_cell_mysql_router" {
+  count = var.name == "nova" ? 1 : 0
+  name  = "nova-cell-mysql-router"
+  model = var.model
+
+  charm {
+    name    = "mysql-router-k8s"
+    channel = var.mysql_router_channel
+    series  = "jammy"
+  }
+
+
+  units = var.scale
+}
+
+resource "juju_integration" "nova-cell-router-to-mysql" {
+  count = var.name == "nova" ? 1 : 0
+  model = var.model
+
+  application {
+    name     = var.mysql
+    endpoint = "database"
+  }
+
+  application {
+    # name     = juju_application.mysql_router.name
+    name     = juju_application.nova_cell_mysql_router[0].name
+    endpoint = "backend-database"
+  }
+}
+
+resource "juju_integration" "nova-cell-to-mysql-router" {
+  count = var.name == "nova" ? 1 : 0
+  model = var.model
+
+  application {
+    name     = juju_application.service.name
+    endpoint = "cell-database"
+  }
+
+  application {
+    # name     = juju_application.mysql_router.name
+    name     = juju_application.nova_cell_mysql_router[0].name
+    endpoint = "database"
   }
 }

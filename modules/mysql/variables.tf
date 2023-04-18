@@ -39,3 +39,13 @@ variable "scale" {
 variable "model" {
   description = "Juju model to deploy resources in"
 }
+
+variable "many-mysql" {
+  description = "Enabling this will switch architecture from one global mysql to one per service"
+  default     = false
+}
+
+variable "services" {
+  description = "List of services requiring a MySQL database."
+  type        = list
+}
