@@ -29,6 +29,7 @@ resource "juju_application" "mysql" {
   name  = var.name
   trust = true
   model = var.model
+  constraints = "mem=8256"
 
   charm {
     name    = "mysql-k8s"
