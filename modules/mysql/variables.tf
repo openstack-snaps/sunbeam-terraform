@@ -25,6 +25,12 @@ variable "channel" {
   type        = string
 }
 
+variable "constraints" {
+  description = "Constraints for MySQL charm"
+  default     = "mem=2048"
+  type        = string
+}
+
 variable "scale" {
   description = "Scale of MySQL K8S operator"
   default     = 1
