@@ -53,3 +53,13 @@ variable "config" {
   description = "Set configuration on model"
   default     = {}
 }
+
+variable "enable_ceph" {
+  description = "Enable Ceph integration"
+  default     = false
+}
+
+variable "ceph_offer_url" {
+  description = "Offer URL from microceph app"
+  default     = "admin/controller.microceph"
+}
