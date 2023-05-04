@@ -26,9 +26,10 @@ terraform {
 
 # core mysql k8s operator
 resource "juju_application" "mysql" {
-  name  = var.name
-  trust = true
-  model = var.model
+  name        = var.name
+  trust       = true
+  model       = var.model
+  constraints = var.constraints
 
   charm {
     name    = "mysql-k8s"
