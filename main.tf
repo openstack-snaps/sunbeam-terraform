@@ -234,6 +234,7 @@ resource "juju_integration" "nova-to-placement" {
   }
 }
 
+# juju integrate glance microceph
 resource "juju_integration" "glance-to-ceph" {
   count = length(data.juju_offer.microceph)
   model = juju_model.sunbeam.name
@@ -243,6 +244,59 @@ resource "juju_integration" "glance-to-ceph" {
     endpoint = "ceph"
   }
 
+  application {
+    offer_url = data.juju_offer.microceph[count.index].url
+  }
+}
+
+module "cinder" {
+  source           = "./modules/openstack-api"
+  charm            = "cinder-k8s"
+  name             = "cinder"
+  model            = juju_model.sunbeam.name
+  channel          = var.openstack_channel
+  rabbitmq         = module.rabbitmq.name
+  mysql            = module.mysql.name
+  keystone         = module.keystone.name
+  ingress-internal = juju_application.traefik.name
+  ingress-public   = juju_application.traefik.name
+}
+
+module "cinder-ceph" {
+  source           = "./modules/openstack-api"
+  charm            = "cinder-ceph-k8s"
+  name             = "cinder-ceph"
+  model            = juju_model.sunbeam.name
+  channel          = var.openstack_channel
+  rabbitmq         = module.rabbitmq.name
+  mysql            = module.mysql.name
+  ingress-internal = ""
+  ingress-public   = ""
+}
+
+# juju integrate cinder cinder-ceph
+resource "juju_integration" "cinder-to-cinder-ceph" {
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.cinder.name
+    endpoint = "storage-backend"
+  }
+
+  application {
+    name     = module.cinder-ceph.name
+    endpoint = "storage-backend"
+  }
+}
+
+# juju integrate cinder-ceph microceph
+resource "juju_integration" "cinder-ceph-to-ceph" {
+  count = length(data.juju_offer.microceph)
+  model = juju_model.sunbeam.name
+  application {
+    name     = module.cinder-ceph.name
+    endpoint = "ceph"
+  }
   application {
     offer_url = data.juju_offer.microceph[count.index].url
   }
