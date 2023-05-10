@@ -23,11 +23,6 @@ variable "mysql_channel" {
   default     = "8.0/stable"
 }
 
-variable "mysql_router_channel" {
-  description = "Operator channel for MySQL Router deployment"
-  default     = "8.0/edge"
-}
-
 variable "rabbitmq_channel" {
   description = "Operator channel for RabbitMQ deployment"
   default     = "3.11/beta"
