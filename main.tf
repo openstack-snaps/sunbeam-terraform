@@ -27,7 +27,7 @@ terraform {
 provider "juju" {}
 
 locals {
-  services-with-mysql = ["keystone", "glance", "nova", "horizon", "neutron", "placement"]
+  services-with-mysql = ["keystone", "glance", "nova", "horizon", "neutron", "placement", "cinder", "cinder-ceph"]
 }
 
 data "juju_offer" "microceph" {
@@ -256,10 +256,11 @@ module "cinder" {
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
   rabbitmq         = module.rabbitmq.name
-  mysql            = module.mysql.name
+  mysql            = module.mysql.name["cinder"]
   keystone         = module.keystone.name
   ingress-internal = juju_application.traefik.name
   ingress-public   = juju_application.traefik.name
+  scale            = var.os-api-scale
 }
 
 module "cinder-ceph" {
@@ -269,9 +270,10 @@ module "cinder-ceph" {
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
   rabbitmq         = module.rabbitmq.name
-  mysql            = module.mysql.name
+  mysql            = module.mysql.name["cinder-ceph"]
   ingress-internal = ""
   ingress-public   = ""
+  scale            = var.os-api-scale
 }
 
 # juju integrate cinder cinder-ceph
