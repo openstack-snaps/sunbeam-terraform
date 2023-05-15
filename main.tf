@@ -19,12 +19,17 @@ terraform {
   required_providers {
     juju = {
       source  = "juju/juju"
-      version = ">= 0.4.1"
+      version = ">= 0.7.0"
     }
   }
 }
 
 provider "juju" {}
+
+data "juju_offer" "microceph" {
+  count = var.enable_ceph ? 1 : 0
+  url   = var.ceph_offer_url
+}
 
 resource "juju_model" "sunbeam" {
   name = var.model
@@ -244,5 +249,19 @@ resource "juju_integration" "nova-to-placement" {
   application {
     name     = module.placement.name
     endpoint = "placement"
+  }
+}
+
+resource "juju_integration" "glance-to-ceph" {
+  count = length(data.juju_offer.microceph)
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.glance.name
+    endpoint = "ceph"
+  }
+
+  application {
+    offer_url = data.juju_offer.microceph[count.index].url
   }
 }
