@@ -63,3 +63,24 @@ variable "ceph_offer_url" {
   description = "Offer URL from microceph app"
   default     = "admin/controller.microceph"
 }
+
+variable "ha-scale" {
+  description = "Scale of traditional HA deployments"
+  # Need better name, because 1 is not HA, needs to encompass services like MySQL, RabbitMQ and OVN
+  default = 1
+}
+
+variable "os-api-scale" {
+  description = "Scale of OpenStack API service deployments"
+  default     = 1
+}
+
+variable "ingress-scale" {
+  description = "Scale of ingress deployment"
+  default     = 1
+}
+
+variable "many-mysql" {
+  description = "Enabling this will switch architecture from one global mysql to one per service"
+  default     = false
+}

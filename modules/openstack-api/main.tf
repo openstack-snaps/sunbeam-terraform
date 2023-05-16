@@ -129,3 +129,34 @@ resource "juju_integration" "traefik-internal-to-service" {
     endpoint = "ingress-internal"
   }
 }
+
+# TODO: specific module for nova?
+resource "juju_integration" "nova-api-to-mysql" {
+  count = var.name == "nova" ? 1 : 0
+  model = var.model
+
+  application {
+    name     = juju_application.service.name
+    endpoint = "api-database"
+  }
+
+  application {
+    name     = var.mysql
+    endpoint = "database"
+  }
+}
+
+resource "juju_integration" "nova-cell-to-mysql" {
+  count = var.name == "nova" ? 1 : 0
+  model = var.model
+
+  application {
+    name     = juju_application.service.name
+    endpoint = "cell-database"
+  }
+
+  application {
+    name     = var.mysql
+    endpoint = "database"
+  }
+}

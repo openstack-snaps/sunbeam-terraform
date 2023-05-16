@@ -26,7 +26,8 @@ terraform {
 
 # core mysql k8s operator
 resource "juju_application" "mysql" {
-  name        = var.name
+  count       = var.many-mysql ? length(var.services) : 1
+  name        = var.many-mysql ? "${var.services[count.index]}-${var.name}" : var.name
   trust       = true
   model       = var.model
   constraints = var.constraints

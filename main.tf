@@ -26,6 +26,10 @@ terraform {
 
 provider "juju" {}
 
+locals {
+  services-with-mysql = ["keystone", "glance", "nova", "horizon", "neutron", "placement"]
+}
+
 data "juju_offer" "microceph" {
   count = var.enable_ceph ? 1 : 0
   url   = var.ceph_offer_url
@@ -48,12 +52,16 @@ module "mysql" {
   model   = juju_model.sunbeam.name
   name    = "mysql"
   channel = var.mysql_channel
+  # Disable scale while router is not available
+  scale      = 1 # var.ha-scale
+  many-mysql = var.many-mysql
+  services   = local.services-with-mysql
 }
 
 module "rabbitmq" {
   source  = "./modules/rabbitmq"
   model   = juju_model.sunbeam.name
-  scale   = 1
+  scale   = var.ha-scale
   channel = var.rabbitmq_channel
 }
 
@@ -64,10 +72,12 @@ module "glance" {
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
   rabbitmq         = module.rabbitmq.name
-  mysql            = module.mysql.name
+  mysql            = module.mysql.name["glance"]
   keystone         = module.keystone.name
   ingress-internal = juju_application.traefik.name
   ingress-public   = juju_application.traefik.name
+  # Cannot scale at the moment
+  scale = 1 # var.os-api-scale
 }
 
 module "keystone" {
@@ -76,9 +86,11 @@ module "keystone" {
   name             = "keystone"
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
-  mysql            = module.mysql.name
+  mysql            = module.mysql.name["keystone"]
   ingress-internal = juju_application.traefik.name
   ingress-public   = juju_application.traefik.name
+  # Cannot scale at the moment
+  scale = 1 # var.os-api-scale
 }
 
 module "nova" {
@@ -88,11 +100,11 @@ module "nova" {
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
   rabbitmq         = module.rabbitmq.name
-  mysql            = module.mysql.name
+  mysql            = module.mysql.name["nova"]
   keystone         = module.keystone.name
   ingress-internal = juju_application.traefik.name
   ingress-public   = juju_application.traefik.name
-  scale            = 1
+  scale            = var.os-api-scale
 }
 
 module "horizon" {
@@ -101,39 +113,11 @@ module "horizon" {
   name                 = "horizon"
   model                = juju_model.sunbeam.name
   channel              = var.openstack_channel
-  mysql                = module.mysql.name
+  mysql                = module.mysql.name["horizon"]
   keystone-credentials = module.keystone.name
   ingress-internal     = juju_application.traefik.name
   ingress-public       = juju_application.traefik.name
-}
-
-# TODO: specific module for nova?
-resource "juju_integration" "nova-api-to-mysql" {
-  model = juju_model.sunbeam.name
-
-  application {
-    name     = module.nova.name
-    endpoint = "api-database"
-  }
-
-  application {
-    name     = module.mysql.name
-    endpoint = "database"
-  }
-}
-
-resource "juju_integration" "nova-cell-to-mysql" {
-  model = juju_model.sunbeam.name
-
-  application {
-    name     = module.nova.name
-    endpoint = "cell-database"
-  }
-
-  application {
-    name     = module.mysql.name
-    endpoint = "database"
-  }
+  scale                = var.os-api-scale
 }
 
 module "neutron" {
@@ -143,11 +127,11 @@ module "neutron" {
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
   rabbitmq         = module.rabbitmq.name
-  mysql            = module.mysql.name
+  mysql            = module.mysql.name["neutron"]
   keystone         = module.keystone.name
   ingress-internal = juju_application.traefik.name
   ingress-public   = juju_application.traefik.name
-  scale            = 1
+  scale            = var.os-api-scale
 }
 
 module "placement" {
@@ -156,11 +140,11 @@ module "placement" {
   name             = "placement"
   model            = juju_model.sunbeam.name
   channel          = var.openstack_channel
-  mysql            = module.mysql.name
+  mysql            = module.mysql.name["placement"]
   keystone         = module.keystone.name
   ingress-internal = juju_application.traefik.name
   ingress-public   = juju_application.traefik.name
-  scale            = 1
+  scale            = var.os-api-scale
 }
 
 resource "juju_application" "traefik" {
@@ -174,7 +158,7 @@ resource "juju_application" "traefik" {
     series  = "focal"
   }
 
-  units = 1
+  units = var.ingress-scale
 }
 
 resource "juju_application" "certificate-authority" {
@@ -198,13 +182,11 @@ module "ovn" {
   source      = "./modules/ovn"
   model       = juju_model.sunbeam.name
   channel     = var.ovn_channel
-  scale       = 1
+  scale       = var.ha-scale
   relay       = true
-  relay_scale = 1
+  relay_scale = var.os-api-scale
   ca          = juju_application.certificate-authority.name
 }
-
-
 
 # juju integrate ovn-central neutron
 resource "juju_integration" "ovn-central-to-neutron" {
