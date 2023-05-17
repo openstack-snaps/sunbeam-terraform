@@ -15,7 +15,7 @@ jobs:
         uses: charmed-kubernetes/actions-operator@main
         with:
           provider: microk8s
-          channel: 1.25-strict/stable
+          channel: 1.26-strict/stable
           juju-channel: 3.1/stable
           microk8s-addons: hostpath-storage dns rbac metallb:10.64.140.40-10.64.140.49
       - name: Install dependencies
@@ -25,7 +25,7 @@ jobs:
       - name: Apply terraform
         run: |
           terraform init
-          terraform apply -auto-approve -parallelism=1
+          terraform apply -auto-approve
           juju model-config -m openstack automatically-retry-hooks=true
           juju-wait -vw -m openstack -t 3600 -x cinder-ceph
       - name: Collect juju status
