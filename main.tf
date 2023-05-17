@@ -27,7 +27,7 @@ terraform {
 provider "juju" {}
 
 locals {
-  services-with-mysql = ["keystone", "glance", "nova", "horizon", "neutron", "placement"]
+  services-with-mysql = ["keystone", "glance", "nova", "horizon", "neutron", "placement", "cinder", "cinder-ceph"]
 }
 
 data "juju_offer" "microceph" {
@@ -234,6 +234,7 @@ resource "juju_integration" "nova-to-placement" {
   }
 }
 
+# juju integrate glance microceph
 resource "juju_integration" "glance-to-ceph" {
   count = length(data.juju_offer.microceph)
   model = juju_model.sunbeam.name
@@ -243,6 +244,61 @@ resource "juju_integration" "glance-to-ceph" {
     endpoint = "ceph"
   }
 
+  application {
+    offer_url = data.juju_offer.microceph[count.index].url
+  }
+}
+
+module "cinder" {
+  source           = "./modules/openstack-api"
+  charm            = "cinder-k8s"
+  name             = "cinder"
+  model            = juju_model.sunbeam.name
+  channel          = var.openstack_channel
+  rabbitmq         = module.rabbitmq.name
+  mysql            = module.mysql.name["cinder"]
+  keystone         = module.keystone.name
+  ingress-internal = juju_application.traefik.name
+  ingress-public   = juju_application.traefik.name
+  scale            = var.os-api-scale
+}
+
+module "cinder-ceph" {
+  source           = "./modules/openstack-api"
+  charm            = "cinder-ceph-k8s"
+  name             = "cinder-ceph"
+  model            = juju_model.sunbeam.name
+  channel          = var.openstack_channel
+  rabbitmq         = module.rabbitmq.name
+  mysql            = module.mysql.name["cinder-ceph"]
+  ingress-internal = ""
+  ingress-public   = ""
+  scale            = var.os-api-scale
+}
+
+# juju integrate cinder cinder-ceph
+resource "juju_integration" "cinder-to-cinder-ceph" {
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.cinder.name
+    endpoint = "storage-backend"
+  }
+
+  application {
+    name     = module.cinder-ceph.name
+    endpoint = "storage-backend"
+  }
+}
+
+# juju integrate cinder-ceph microceph
+resource "juju_integration" "cinder-ceph-to-ceph" {
+  count = length(data.juju_offer.microceph)
+  model = juju_model.sunbeam.name
+  application {
+    name     = module.cinder-ceph.name
+    endpoint = "ceph"
+  }
   application {
     offer_url = data.juju_offer.microceph[count.index].url
   }

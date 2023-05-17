@@ -102,10 +102,11 @@ resource "juju_integration" "service-to-keystone" {
 
 # juju integrate traefik-public glance
 resource "juju_integration" "traefik-public-to-service" {
+  for_each = var.ingress-public == "" ? {} : { target = var.ingress-public }
   model = var.model
 
   application {
-    name     = var.ingress-public
+    name     = each.value
     endpoint = "ingress"
   }
 
@@ -117,10 +118,11 @@ resource "juju_integration" "traefik-public-to-service" {
 
 # juju integrate traefik-internal glance
 resource "juju_integration" "traefik-internal-to-service" {
+  for_each = var.ingress-internal == "" ? {} : { target = var.ingress-internal }
   model = var.model
 
   application {
-    name     = var.ingress-internal
+    name     = each.value
     endpoint = "ingress"
   }
 
