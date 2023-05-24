@@ -19,15 +19,15 @@ terraform {
   required_providers {
     juju = {
       source  = "juju/juju"
-      version = ">= 0.4.1"
+      version = ">= 0.7.0"
     }
   }
 }
 
 resource "juju_application" "service" {
-  name   = var.name
-  trust  = true
-  model  = var.model
+  name  = var.name
+  trust = true
+  model = var.model
 
   charm {
     name    = var.charm
@@ -37,10 +37,38 @@ resource "juju_application" "service" {
 
   config = var.resource-configs
 
-  units  = var.scale
+  units = var.scale
 }
 
-resource "juju_integration" "service-to-mysql" {
+resource "juju_application" "mysql-router" {
+  name  = "${var.name}-mysql-router"
+  trust = true
+  model = var.model
+
+  charm {
+    name    = "mysql-router-k8s"
+    channel = var.mysql-router-channel
+    series  = "jammy"
+  }
+
+  units = var.scale
+}
+
+resource "juju_integration" "mysql-router-to-mysql" {
+  model = var.model
+
+  application {
+    name     = juju_application.mysql-router.name
+    endpoint = "backend-database"
+  }
+
+  application {
+    name     = var.mysql
+    endpoint = "database"
+  }
+}
+
+resource "juju_integration" "service-to-mysql-router" {
   model = var.model
 
   application {
@@ -49,7 +77,7 @@ resource "juju_integration" "service-to-mysql" {
   }
 
   application {
-    name     = var.mysql
+    name     = juju_application.mysql-router.name
     endpoint = "database"
   }
 }
@@ -105,7 +133,7 @@ resource "juju_integration" "service-to-keystone" {
 # juju integrate traefik-public glance
 resource "juju_integration" "traefik-public-to-service" {
   for_each = var.ingress-public == "" ? {} : { target = var.ingress-public }
-  model = var.model
+  model    = var.model
 
   application {
     name     = each.value
@@ -121,7 +149,7 @@ resource "juju_integration" "traefik-public-to-service" {
 # juju integrate traefik-internal glance
 resource "juju_integration" "traefik-internal-to-service" {
   for_each = var.ingress-internal == "" ? {} : { target = var.ingress-internal }
-  model = var.model
+  model    = var.model
 
   application {
     name     = each.value
@@ -135,8 +163,22 @@ resource "juju_integration" "traefik-internal-to-service" {
 }
 
 # TODO: specific module for nova?
-resource "juju_integration" "nova-api-to-mysql" {
+resource "juju_application" "nova-api-mysql-router" {
   count = var.name == "nova" ? 1 : 0
+  name  = "nova-api-mysql-router"
+  model = var.model
+
+  charm {
+    name    = "mysql-router-k8s"
+    channel = var.mysql-router-channel
+    series  = "jammy"
+  }
+
+  units = var.scale
+}
+
+resource "juju_integration" "nova-api-to-mysql-router" {
+  count = length(juju_application.nova-api-mysql-router)
   model = var.model
 
   application {
@@ -145,13 +187,57 @@ resource "juju_integration" "nova-api-to-mysql" {
   }
 
   application {
-    name     = var.mysql
+    name     = juju_application.nova-api-mysql-router[count.index].name
     endpoint = "database"
   }
 }
 
-resource "juju_integration" "nova-cell-to-mysql" {
+resource "juju_integration" "nova-api-router-to-mysql" {
+  count = length(juju_application.nova-api-mysql-router)
+  model = var.model
+
+  application {
+    name     = var.mysql
+    endpoint = "database"
+  }
+
+  application {
+    name     = juju_application.nova-api-mysql-router[count.index].name
+    endpoint = "backend-database"
+  }
+}
+
+resource "juju_application" "nova-cell-mysql-router" {
   count = var.name == "nova" ? 1 : 0
+  name  = "nova-cell-mysql-router"
+  model = var.model
+
+  charm {
+    name    = "mysql-router-k8s"
+    channel = var.mysql-router-channel
+    series  = "jammy"
+  }
+
+  units = var.scale
+}
+
+resource "juju_integration" "nova-cell-router-to-mysql" {
+  count = length(juju_application.nova-cell-mysql-router)
+  model = var.model
+
+  application {
+    name     = var.mysql
+    endpoint = "database"
+  }
+
+  application {
+    name     = juju_application.nova-cell-mysql-router[count.index].name
+    endpoint = "backend-database"
+  }
+}
+
+resource "juju_integration" "nova-cell-to-mysql-router" {
+  count = length(juju_application.nova-cell-mysql-router)
   model = var.model
 
   application {
@@ -160,7 +246,7 @@ resource "juju_integration" "nova-cell-to-mysql" {
   }
 
   application {
-    name     = var.mysql
+    name     = juju_application.nova-cell-mysql-router[count.index].name
     endpoint = "database"
   }
 }

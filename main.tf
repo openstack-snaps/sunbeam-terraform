@@ -77,7 +77,8 @@ module "glance" {
   ingress-internal = juju_application.traefik.name
   ingress-public   = juju_application.traefik.name
   # Cannot scale at the moment
-  scale = 1 # var.os-api-scale
+  scale                = 1 # var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
   resource-configs = {
     ceph-osd-replication-count = var.ceph-osd-replication-count
   }
@@ -93,21 +94,23 @@ module "keystone" {
   ingress-internal = juju_application.traefik.name
   ingress-public   = juju_application.traefik.name
   # Cannot scale at the moment
-  scale = 1 # var.os-api-scale
+  scale                = 1 # var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
 }
 
 module "nova" {
-  source           = "./modules/openstack-api"
-  charm            = "nova-k8s"
-  name             = "nova"
-  model            = juju_model.sunbeam.name
-  channel          = var.openstack-channel
-  rabbitmq         = module.rabbitmq.name
-  mysql            = module.mysql.name["nova"]
-  keystone         = module.keystone.name
-  ingress-internal = juju_application.traefik.name
-  ingress-public   = juju_application.traefik.name
-  scale            = var.os-api-scale
+  source               = "./modules/openstack-api"
+  charm                = "nova-k8s"
+  name                 = "nova"
+  model                = juju_model.sunbeam.name
+  channel              = var.openstack-channel
+  rabbitmq             = module.rabbitmq.name
+  mysql                = module.mysql.name["nova"]
+  keystone             = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
 }
 
 module "horizon" {
@@ -121,33 +124,36 @@ module "horizon" {
   ingress-internal     = juju_application.traefik.name
   ingress-public       = juju_application.traefik.name
   scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
 }
 
 module "neutron" {
-  source           = "./modules/openstack-api"
-  charm            = "neutron-k8s"
-  name             = "neutron"
-  model            = juju_model.sunbeam.name
-  channel          = var.openstack-channel
-  rabbitmq         = module.rabbitmq.name
-  mysql            = module.mysql.name["neutron"]
-  keystone         = module.keystone.name
-  ingress-internal = juju_application.traefik.name
-  ingress-public   = juju_application.traefik.name
-  scale            = var.os-api-scale
+  source               = "./modules/openstack-api"
+  charm                = "neutron-k8s"
+  name                 = "neutron"
+  model                = juju_model.sunbeam.name
+  channel              = var.openstack-channel
+  rabbitmq             = module.rabbitmq.name
+  mysql                = module.mysql.name["neutron"]
+  keystone             = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
 }
 
 module "placement" {
-  source           = "./modules/openstack-api"
-  charm            = "placement-k8s"
-  name             = "placement"
-  model            = juju_model.sunbeam.name
-  channel          = var.openstack-channel
-  mysql            = module.mysql.name["placement"]
-  keystone         = module.keystone.name
-  ingress-internal = juju_application.traefik.name
-  ingress-public   = juju_application.traefik.name
-  scale            = var.os-api-scale
+  source               = "./modules/openstack-api"
+  charm                = "placement-k8s"
+  name                 = "placement"
+  model                = juju_model.sunbeam.name
+  channel              = var.openstack-channel
+  mysql                = module.mysql.name["placement"]
+  keystone             = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
 }
 
 resource "juju_application" "traefik" {
@@ -206,7 +212,6 @@ resource "juju_integration" "ovn-central-to-neutron" {
   }
 }
 
-
 # juju integrate neutron vault
 resource "juju_integration" "neutron-to-ca" {
   model = juju_model.sunbeam.name
@@ -253,17 +258,18 @@ resource "juju_integration" "glance-to-ceph" {
 }
 
 module "cinder" {
-  source           = "./modules/openstack-api"
-  charm            = "cinder-k8s"
-  name             = "cinder"
-  model            = juju_model.sunbeam.name
-  channel          = var.openstack-channel
-  rabbitmq         = module.rabbitmq.name
-  mysql            = module.mysql.name["cinder"]
-  keystone         = module.keystone.name
-  ingress-internal = juju_application.traefik.name
-  ingress-public   = juju_application.traefik.name
-  scale            = var.os-api-scale
+  source               = "./modules/openstack-api"
+  charm                = "cinder-k8s"
+  name                 = "cinder"
+  model                = juju_model.sunbeam.name
+  channel              = var.openstack-channel
+  rabbitmq             = module.rabbitmq.name
+  mysql                = module.mysql.name["cinder"]
+  keystone             = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
 }
 
 module "cinder-ceph" {

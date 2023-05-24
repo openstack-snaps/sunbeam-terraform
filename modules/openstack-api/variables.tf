@@ -24,6 +24,12 @@ variable "channel" {
   type        = string
 }
 
+variable "mysql-router-channel" {
+  description = "Operator channel for MySQL router deployment"
+  default     = "8.0/edge"
+  type        = string
+}
+
 variable "scale" {
   description = "Scale of application"
   type        = number
