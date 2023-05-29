@@ -64,6 +64,11 @@ variable "ceph_offer_url" {
   default     = "admin/controller.microceph"
 }
 
+variable "ceph_osd_replication_count" {
+  description = "Ceph OSd replication count to set on glance/cinder"
+  default     = 1
+}
+
 variable "ha-scale" {
   description = "Scale of traditional HA deployments"
   # Need better name, because 1 is not HA, needs to encompass services like MySQL, RabbitMQ and OVN

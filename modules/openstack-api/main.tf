@@ -25,9 +25,9 @@ terraform {
 }
 
 resource "juju_application" "service" {
-  name  = var.name
-  trust = true
-  model = var.model
+  name   = var.name
+  trust  = true
+  model  = var.model
 
   charm {
     name    = var.charm
@@ -35,7 +35,9 @@ resource "juju_application" "service" {
     series  = "jammy"
   }
 
-  units = var.scale
+  config = var.resource-configs
+
+  units  = var.scale
 }
 
 resource "juju_integration" "service-to-mysql" {

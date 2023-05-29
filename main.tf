@@ -78,6 +78,9 @@ module "glance" {
   ingress-public   = juju_application.traefik.name
   # Cannot scale at the moment
   scale = 1 # var.os-api-scale
+  resource-configs = {
+    ceph-osd-replication-count = var.ceph_osd_replication_count
+  }
 }
 
 module "keystone" {
@@ -274,6 +277,9 @@ module "cinder-ceph" {
   ingress-internal = ""
   ingress-public   = ""
   scale            = var.ha-scale
+  resource-configs = {
+    ceph-osd-replication-count = var.ceph_osd_replication_count
+  }
 }
 
 # juju integrate cinder cinder-ceph
