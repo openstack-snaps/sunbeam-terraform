@@ -72,3 +72,9 @@ variable "ingress-public" {
   description = "Ingress operator to integrate with for public endpoints"
   type        = string
 }
+
+variable "resource-configs" {
+  description = "Configs to set for all resources"
+  type        = map(string)
+  default     = {}
+}
