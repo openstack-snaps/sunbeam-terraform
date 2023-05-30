@@ -13,22 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable "openstack_channel" {
+variable "openstack-channel" {
   description = "Operator channel for OpenStack deployment"
   default     = "yoga/beta"
 }
 
-variable "mysql_channel" {
+variable "mysql-channel" {
   description = "Operator channel for MySQL deployment"
   default     = "8.0/stable"
 }
 
-variable "rabbitmq_channel" {
+variable "rabbitmq-channel" {
   description = "Operator channel for RabbitMQ deployment"
   default     = "3.9/beta"
 }
 
-variable "ovn_channel" {
+variable "ovn-channel" {
   description = "Operator channel for OVN deployment"
   default     = "22.03/beta"
 }
@@ -54,18 +54,18 @@ variable "config" {
   default     = {}
 }
 
-variable "enable_ceph" {
+variable "enable-ceph" {
   description = "Enable Ceph integration"
   default     = false
 }
 
-variable "ceph_offer_url" {
+variable "ceph-offer-url" {
   description = "Offer URL from microceph app"
   default     = "admin/controller.microceph"
 }
 
-variable "ceph_osd_replication_count" {
-  description = "Ceph OSd replication count to set on glance/cinder"
+variable "ceph-osd-replication-count" {
+  description = "Ceph OSD replication count to set on glance/cinder"
   default     = 1
 }
 

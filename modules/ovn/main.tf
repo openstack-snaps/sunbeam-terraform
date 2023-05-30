@@ -50,7 +50,7 @@ resource "juju_application" "ovn-relay" {
     series  = "jammy"
   }
 
-  units = var.relay_scale
+  units = var.relay-scale
 }
 
 
