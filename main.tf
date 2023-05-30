@@ -31,8 +31,8 @@ locals {
 }
 
 data "juju_offer" "microceph" {
-  count = var.enable_ceph ? 1 : 0
-  url   = var.ceph_offer_url
+  count = var.enable-ceph ? 1 : 0
+  url   = var.ceph-offer-url
 }
 
 resource "juju_model" "sunbeam" {
@@ -51,7 +51,7 @@ module "mysql" {
   source  = "./modules/mysql"
   model   = juju_model.sunbeam.name
   name    = "mysql"
-  channel = var.mysql_channel
+  channel = var.mysql-channel
   # Disable scale while router is not available
   scale      = 1 # var.ha-scale
   many-mysql = var.many-mysql
@@ -62,7 +62,7 @@ module "rabbitmq" {
   source  = "./modules/rabbitmq"
   model   = juju_model.sunbeam.name
   scale   = var.ha-scale
-  channel = var.rabbitmq_channel
+  channel = var.rabbitmq-channel
 }
 
 module "glance" {
@@ -70,7 +70,7 @@ module "glance" {
   charm            = "glance-k8s"
   name             = "glance"
   model            = juju_model.sunbeam.name
-  channel          = var.openstack_channel
+  channel          = var.openstack-channel
   rabbitmq         = module.rabbitmq.name
   mysql            = module.mysql.name["glance"]
   keystone         = module.keystone.name
@@ -79,7 +79,7 @@ module "glance" {
   # Cannot scale at the moment
   scale = 1 # var.os-api-scale
   resource-configs = {
-    ceph-osd-replication-count = var.ceph_osd_replication_count
+    ceph-osd-replication-count = var.ceph-osd-replication-count
   }
 }
 
@@ -88,7 +88,7 @@ module "keystone" {
   charm            = "keystone-k8s"
   name             = "keystone"
   model            = juju_model.sunbeam.name
-  channel          = var.openstack_channel
+  channel          = var.openstack-channel
   mysql            = module.mysql.name["keystone"]
   ingress-internal = juju_application.traefik.name
   ingress-public   = juju_application.traefik.name
@@ -101,7 +101,7 @@ module "nova" {
   charm            = "nova-k8s"
   name             = "nova"
   model            = juju_model.sunbeam.name
-  channel          = var.openstack_channel
+  channel          = var.openstack-channel
   rabbitmq         = module.rabbitmq.name
   mysql            = module.mysql.name["nova"]
   keystone         = module.keystone.name
@@ -115,7 +115,7 @@ module "horizon" {
   charm                = "horizon-k8s"
   name                 = "horizon"
   model                = juju_model.sunbeam.name
-  channel              = var.openstack_channel
+  channel              = var.openstack-channel
   mysql                = module.mysql.name["horizon"]
   keystone-credentials = module.keystone.name
   ingress-internal     = juju_application.traefik.name
@@ -128,7 +128,7 @@ module "neutron" {
   charm            = "neutron-k8s"
   name             = "neutron"
   model            = juju_model.sunbeam.name
-  channel          = var.openstack_channel
+  channel          = var.openstack-channel
   rabbitmq         = module.rabbitmq.name
   mysql            = module.mysql.name["neutron"]
   keystone         = module.keystone.name
@@ -142,7 +142,7 @@ module "placement" {
   charm            = "placement-k8s"
   name             = "placement"
   model            = juju_model.sunbeam.name
-  channel          = var.openstack_channel
+  channel          = var.openstack-channel
   mysql            = module.mysql.name["placement"]
   keystone         = module.keystone.name
   ingress-internal = juju_application.traefik.name
@@ -184,10 +184,10 @@ resource "juju_application" "certificate-authority" {
 module "ovn" {
   source      = "./modules/ovn"
   model       = juju_model.sunbeam.name
-  channel     = var.ovn_channel
+  channel     = var.ovn-channel
   scale       = var.ha-scale
   relay       = true
-  relay_scale = var.os-api-scale
+  relay-scale = var.os-api-scale
   ca          = juju_application.certificate-authority.name
 }
 
@@ -257,7 +257,7 @@ module "cinder" {
   charm            = "cinder-k8s"
   name             = "cinder"
   model            = juju_model.sunbeam.name
-  channel          = var.openstack_channel
+  channel          = var.openstack-channel
   rabbitmq         = module.rabbitmq.name
   mysql            = module.mysql.name["cinder"]
   keystone         = module.keystone.name
@@ -271,14 +271,14 @@ module "cinder-ceph" {
   charm            = "cinder-ceph-k8s"
   name             = "cinder-ceph"
   model            = juju_model.sunbeam.name
-  channel          = var.openstack_channel
+  channel          = var.openstack-channel
   rabbitmq         = module.rabbitmq.name
   mysql            = module.mysql.name["cinder"]
   ingress-internal = ""
   ingress-public   = ""
   scale            = var.ha-scale
   resource-configs = {
-    ceph-osd-replication-count = var.ceph_osd_replication_count
+    ceph-osd-replication-count = var.ceph-osd-replication-count
   }
 }
 

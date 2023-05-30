@@ -36,7 +36,7 @@ variable "relay" {
   default     = true
 }
 
-variable "relay_scale" {
+variable "relay-scale" {
   description = "Scale of OVN relay application"
   type        = number
   default     = 1
