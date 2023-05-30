@@ -25,7 +25,7 @@ variable "mysql_channel" {
 
 variable "rabbitmq_channel" {
   description = "Operator channel for RabbitMQ deployment"
-  default     = "3.11/beta"
+  default     = "3.9/beta"
 }
 
 variable "ovn_channel" {
