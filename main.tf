@@ -85,16 +85,15 @@ module "glance" {
 }
 
 module "keystone" {
-  source           = "./modules/openstack-api"
-  charm            = "keystone-k8s"
-  name             = "keystone"
-  model            = juju_model.sunbeam.name
-  channel          = var.openstack-channel
-  mysql            = module.mysql.name["keystone"]
-  ingress-internal = juju_application.traefik.name
-  ingress-public   = juju_application.traefik.name
-  # Cannot scale at the moment
-  scale                = 1 # var.os-api-scale
+  source               = "./modules/openstack-api"
+  charm                = "keystone-k8s"
+  name                 = "keystone"
+  model                = juju_model.sunbeam.name
+  channel              = var.openstack-channel
+  mysql                = module.mysql.name["keystone"]
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
+  scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
 }
 
