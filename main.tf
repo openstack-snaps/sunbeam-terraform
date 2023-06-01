@@ -48,12 +48,11 @@ resource "juju_model" "sunbeam" {
 }
 
 module "mysql" {
-  source  = "./modules/mysql"
-  model   = juju_model.sunbeam.name
-  name    = "mysql"
-  channel = var.mysql-channel
-  # Disable scale while router is not available
-  scale      = 1 # var.ha-scale
+  source     = "./modules/mysql"
+  model      = juju_model.sunbeam.name
+  name       = "mysql"
+  channel    = var.mysql-channel
+  scale      = var.ha-scale
   many-mysql = var.many-mysql
   services   = local.services-with-mysql
 }
