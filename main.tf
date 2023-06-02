@@ -175,7 +175,7 @@ resource "juju_application" "certificate-authority" {
 
   charm {
     name    = "tls-certificates-operator"
-    channel = "edge"
+    channel = "latest/stable"
     series  = "jammy"
   }
 
