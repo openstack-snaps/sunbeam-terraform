@@ -65,18 +65,17 @@ module "rabbitmq" {
 }
 
 module "glance" {
-  source           = "./modules/openstack-api"
-  charm            = "glance-k8s"
-  name             = "glance"
-  model            = juju_model.sunbeam.name
-  channel          = var.openstack-channel
-  rabbitmq         = module.rabbitmq.name
-  mysql            = module.mysql.name["glance"]
-  keystone         = module.keystone.name
-  ingress-internal = juju_application.traefik.name
-  ingress-public   = juju_application.traefik.name
-  # Cannot scale at the moment
-  scale                = 1 # var.os-api-scale
+  source               = "./modules/openstack-api"
+  charm                = "glance-k8s"
+  name                 = "glance"
+  model                = juju_model.sunbeam.name
+  channel              = var.openstack-channel
+  rabbitmq             = module.rabbitmq.name
+  mysql                = module.mysql.name["glance"]
+  keystone             = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
+  scale                = var.enable-ceph ? var.os-api-scale : 1
   mysql-router-channel = var.mysql-router-channel
   resource-configs = {
     ceph-osd-replication-count = var.ceph-osd-replication-count
