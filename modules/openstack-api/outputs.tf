@@ -17,3 +17,8 @@ output "name" {
   description = "Name of the deployed operator"
   value       = juju_application.service.name
 }
+
+output "keystone-offer-url" {
+  description = "URL of the keystone offer"
+  value       = juju_offer.keystone-offer[*].url
+}

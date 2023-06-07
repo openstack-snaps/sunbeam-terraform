@@ -312,3 +312,9 @@ resource "juju_integration" "cinder-ceph-to-ceph" {
     offer_url = data.juju_offer.microceph[count.index].url
   }
 }
+
+resource "juju_offer" "ca-offer" {
+  model            = juju_model.sunbeam.name
+  application_name = juju_application.certificate-authority.name
+  endpoint         = "certificates"
+}

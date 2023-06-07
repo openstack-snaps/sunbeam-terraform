@@ -98,3 +98,9 @@ resource "juju_integration" "ovn-relay-to-ca" {
   }
 }
 
+resource "juju_offer" "ovn-relay-offer" {
+  count            = var.relay != "" ? 1 : 0
+  model            = var.model
+  application_name = juju_application.ovn-relay[count.index].name
+  endpoint         = "ovsdb-cms-relay"
+}
