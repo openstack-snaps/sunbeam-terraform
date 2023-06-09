@@ -38,3 +38,10 @@ resource "juju_application" "rabbitmq" {
 
   units = var.scale
 }
+
+
+resource "juju_offer" "rabbitmq-offer" {
+  model            = var.model
+  application_name = juju_application.rabbitmq.name
+  endpoint         = "amqp"
+}

@@ -250,3 +250,10 @@ resource "juju_integration" "nova-cell-to-mysql-router" {
     endpoint = "database"
   }
 }
+
+resource "juju_offer" "keystone-offer" {
+  count            = var.name == "keystone" ? 1 : 0
+  model            = var.model
+  application_name = juju_application.service.name
+  endpoint         = "identity-credentials"
+}

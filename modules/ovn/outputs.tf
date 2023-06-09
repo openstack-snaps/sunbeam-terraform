@@ -17,3 +17,8 @@ output "name" {
   description = "Name of the deployed OVN central"
   value       = juju_application.ovn-central.name
 }
+
+output "ovn-relay-offer-url" {
+  description = "URL of the ovn relay offer"
+  value       = juju_offer.ovn-relay-offer[*].url
+}
