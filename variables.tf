@@ -15,7 +15,7 @@
 
 variable "openstack-channel" {
   description = "Operator channel for OpenStack deployment"
-  default     = "yoga/beta"
+  default     = "2023.1/stable"
 }
 
 variable "mysql-channel" {
@@ -36,7 +36,7 @@ variable "rabbitmq-channel" {
 
 variable "ovn-channel" {
   description = "Operator channel for OVN deployment"
-  default     = "22.03/beta"
+  default     = "23.03/stable"
 }
 
 variable "model" {
