@@ -26,7 +26,6 @@ terraform {
 
 resource "juju_application" "ovn-central" {
   name  = "ovn-central"
-  trust = true
   model = var.model
 
   charm {
