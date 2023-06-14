@@ -6,6 +6,11 @@ on:
 
 jobs:
   deploy:
+    strategy:
+      matrix:
+        risk:
+          - stable
+          - edge
     name: deploy
     runs-on: ubuntu-latest
     steps:
@@ -16,7 +21,7 @@ jobs:
         with:
           provider: microk8s
           channel: 1.26-strict/stable
-          juju-channel: 3.1/stable
+          juju-channel: 3.2/stable
           microk8s-addons: hostpath-storage dns rbac metallb:10.64.140.40-10.64.140.49
       - name: Install dependencies
         run: |
@@ -25,7 +30,9 @@ jobs:
       - name: Apply terraform
         run: |
           terraform init
-          terraform apply -auto-approve
+          terraform apply -auto-approve \
+            -var "ovn-channel=23.03/${{ matrix.risk }}" \
+            -var "openstack-channel=2023.1/${{ matrix.risk }}"
           juju model-config -m openstack automatically-retry-hooks=true
           juju-wait -vw -m openstack -t 3600 -x cinder-ceph -r 3
       - name: Collect juju status
