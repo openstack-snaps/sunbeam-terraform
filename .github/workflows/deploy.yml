@@ -16,8 +16,19 @@ jobs:
         with:
           provider: microk8s
           channel: 1.26-strict/stable
-          juju-channel: 3.1/stable
+          juju-channel: 3.2/stable
           microk8s-addons: hostpath-storage dns rbac metallb:10.64.140.40-10.64.140.49
+      - name: Configure kubelet arguments
+        run: |
+          echo "--serialize-image-pulls=false" | sudo tee -a /var/snap/microk8s/current/args/kubelet
+          sudo microk8s stop
+          sudo microk8s start
+          sudo microk8s status --wait-ready --timeout 300
+          sudo microk8s.kubectl get -n controller-$CONTROLLER_NAME pod/controller-0
+          sudo microk8s.kubectl wait --for=jsonpath='{.status.phase}'=Running -n controller-$CONTROLLER_NAME --timeout 5m pod/controller-0
+          while ! juju show-controller 2> /dev/null; do sleep 10; done
+          address=$(juju show-controller --format json | jq -r .\"$CONTROLLER_NAME\"'.details."api-endpoints" | first')
+          curl -k -s --connect-timeout 300 https://$address
       - name: Install dependencies
         run: |
           sudo snap install --classic terraform
@@ -25,9 +36,21 @@ jobs:
       - name: Apply terraform
         run: |
           terraform init
-          terraform apply -auto-approve
+          terraform apply -auto-approve \
+            -var "ovn-channel=23.03/edge" \
+            -var "openstack-channel=2023.1/edge"
+      - name: Wait for deployment
+        run: |
           juju model-config -m openstack automatically-retry-hooks=true
           juju-wait -vw -m openstack -t 3600 -x cinder-ceph -r 3
+      - name: Get pods logs
+        if: always()
+        run: |
+          for pod in $(kubectl get pods -n openstack -o=jsonpath='{.items[*].metadata.name}');
+          do
+            echo Collecting logs: $pod
+            kubectl logs -n openstack --all-containers $pod
+          done
       - name: Collect juju status
         if: always()
         run: |
