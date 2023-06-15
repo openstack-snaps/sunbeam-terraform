@@ -283,6 +283,7 @@ module "cinder-ceph" {
   resource-configs = {
     ceph-osd-replication-count = var.ceph-osd-replication-count
   }
+  mysql-router-channel = var.mysql-router-channel
 }
 
 # juju integrate cinder cinder-ceph
