@@ -38,7 +38,8 @@ jobs:
           terraform init
           terraform apply -auto-approve \
             -var "ovn-channel=23.03/edge" \
-            -var "openstack-channel=2023.1/edge"
+            -var "openstack-channel=2023.1/edge" \
+            -var "mysql-constraints=mem=768M"
       - name: Wait for deployment
         run: |
           juju model-config -m openstack automatically-retry-hooks=true
