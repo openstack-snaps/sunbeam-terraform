@@ -95,3 +95,8 @@ variable "many-mysql" {
   description = "Enabling this will switch architecture from one global mysql to one per service"
   default     = false
 }
+
+variable "enable-heat" {
+  description = "Enable OpenStack Heat service"
+  default     = false
+}
