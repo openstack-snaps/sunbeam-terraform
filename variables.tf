@@ -100,3 +100,9 @@ variable "enable-heat" {
   description = "Enable OpenStack Heat service"
   default     = false
 }
+
+# Temporary channel for heat until 2023.1/stable is released.
+variable "heat-channel" {
+  description = "Operator channel for OpenStack Heat deployment"
+  default     = "latest/edge"
+}

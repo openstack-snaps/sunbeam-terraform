@@ -337,7 +337,7 @@ module "heat" {
   charm                = "heat-k8s"
   name                 = "heat"
   model                = juju_model.sunbeam.name
-  channel              = var.openstack-channel
+  channel              = var.heat-channel
   rabbitmq             = module.rabbitmq.name
   mysql                = var.many-mysql ? module.mysql-heat[0].name["heat"] : "mysql"
   keystone             = module.keystone.name
@@ -347,26 +347,15 @@ module "heat" {
   mysql-router-channel = var.mysql-router-channel
 }
 
-module "mysql-heat-cfn" {
-  count      = var.enable-heat ? (var.many-mysql ? 1 : 0) : 0
-  source     = "./modules/mysql"
-  model      = juju_model.sunbeam.name
-  name       = "mysql"
-  channel    = var.mysql-channel
-  scale      = var.ha-scale
-  many-mysql = var.many-mysql
-  services   = ["heat"]
-}
-
 module "heat-cfn" {
   count                = var.enable-heat ? 1 : 0
   source               = "./modules/openstack-api"
   charm                = "heat-k8s"
   name                 = "heat-cfn"
   model                = juju_model.sunbeam.name
-  channel              = var.openstack-channel
+  channel              = var.heat-channel
   rabbitmq             = module.rabbitmq.name
-  mysql                = var.many-mysql ? module.mysql-heat-cfn[0].name["heat"] : "mysql"
+  mysql                = var.many-mysql ? module.mysql-heat[0].name["heat"] : "mysql"
   keystone             = module.keystone.name
   ingress-internal     = juju_application.traefik.name
   ingress-public       = juju_application.traefik.name
