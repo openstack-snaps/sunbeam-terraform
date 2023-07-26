@@ -319,3 +319,49 @@ resource "juju_offer" "ca-offer" {
   application_name = juju_application.certificate-authority.name
   endpoint         = "certificates"
 }
+
+module "mysql-heat" {
+  count      = var.enable-heat ? (var.many-mysql ? 1 : 0) : 0
+  source     = "./modules/mysql"
+  model      = juju_model.sunbeam.name
+  name       = "mysql"
+  channel    = var.mysql-channel
+  scale      = var.ha-scale
+  many-mysql = var.many-mysql
+  services   = ["heat"]
+}
+
+module "heat" {
+  count                = var.enable-heat ? 1 : 0
+  source               = "./modules/openstack-api"
+  charm                = "heat-k8s"
+  name                 = "heat"
+  model                = juju_model.sunbeam.name
+  channel              = var.heat-channel
+  rabbitmq             = module.rabbitmq.name
+  mysql                = var.many-mysql ? module.mysql-heat[0].name["heat"] : "mysql"
+  keystone             = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
+}
+
+module "heat-cfn" {
+  count                = var.enable-heat ? 1 : 0
+  source               = "./modules/openstack-api"
+  charm                = "heat-k8s"
+  name                 = "heat-cfn"
+  model                = juju_model.sunbeam.name
+  channel              = var.heat-channel
+  rabbitmq             = module.rabbitmq.name
+  mysql                = var.many-mysql ? module.mysql-heat[0].name["heat"] : "mysql"
+  keystone             = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
+  resource-configs = {
+    api_service = "heat-api-cfn"
+  }
+}

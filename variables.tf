@@ -95,3 +95,14 @@ variable "many-mysql" {
   description = "Enabling this will switch architecture from one global mysql to one per service"
   default     = false
 }
+
+variable "enable-heat" {
+  description = "Enable OpenStack Heat service"
+  default     = false
+}
+
+# Temporary channel for heat until 2023.1/stable is released.
+variable "heat-channel" {
+  description = "Operator channel for OpenStack Heat deployment"
+  default     = "latest/edge"
+}
