@@ -106,3 +106,8 @@ variable "heat-channel" {
   description = "Operator channel for OpenStack Heat deployment"
   default     = "latest/edge"
 }
+
+variable "enable-barbican" {
+  description = "Enable OpenStack Barbican service"
+  default     = false
+}
