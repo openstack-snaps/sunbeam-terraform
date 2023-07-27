@@ -365,3 +365,30 @@ module "heat-cfn" {
     api_service = "heat-api-cfn"
   }
 }
+
+module "mysql-barbican" {
+  count      = var.enable-barbican ? (var.many-mysql ? 1 : 0) : 0
+  source     = "./modules/mysql"
+  model      = juju_model.sunbeam.name
+  name       = "mysql"
+  channel    = var.mysql-channel
+  scale      = var.ha-scale
+  many-mysql = var.many-mysql
+  services   = ["barbican"]
+}
+
+module "barbican" {
+  count                = var.enable-barbican ? 1 : 0
+  source               = "./modules/openstack-api"
+  charm                = "barbican-k8s"
+  name                 = "barbican"
+  model                = juju_model.sunbeam.name
+  channel              = var.openstack-channel
+  rabbitmq             = module.rabbitmq.name
+  mysql                = var.many-mysql ? module.mysql-barbican[0].name["barbican"] : "mysql"
+  keystone             = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
+}
