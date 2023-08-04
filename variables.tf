@@ -23,6 +23,12 @@ variable "mysql-channel" {
   default     = "8.0/candidate"
 }
 
+variable "mysql-constraints" {
+  description = "Constraints for MySQL K8S operator"
+  default     = "mem=2048M"
+  type        = string
+}
+
 variable "mysql-router-channel" {
   description = "Operator channel for MySQL router deployment"
   default     = "8.0/candidate"
