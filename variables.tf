@@ -106,3 +106,14 @@ variable "heat-channel" {
   description = "Operator channel for OpenStack Heat deployment"
   default     = "2023.1/edge"
 }
+
+variable "enable-telemetry" {
+  description = "Enable OpenStack Telemetry services"
+  default     = false
+}
+
+# Temporary channel for telemetry services until 2023.1/stable is released.
+variable "telemetry-channel" {
+  description = "Operator channel for OpenStack Telemetry deployment"
+  default     = "2023.1/edge"
+}
