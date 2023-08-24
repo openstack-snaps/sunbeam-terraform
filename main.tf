@@ -365,3 +365,105 @@ module "heat-cfn" {
     api_service = "heat-api-cfn"
   }
 }
+
+module "mysql-telemetry" {
+  count      = var.enable-telemetry ? (var.many-mysql ? 1 : 0) : 0
+  source     = "./modules/mysql"
+  model      = juju_model.sunbeam.name
+  name       = "mysql"
+  channel    = var.mysql-channel
+  scale      = var.ha-scale
+  many-mysql = var.many-mysql
+  services   = ["aodh", "gnocchi"]
+}
+
+module "aodh" {
+  count                = var.enable-telemetry ? 1 : 0
+  source               = "./modules/openstack-api"
+  charm                = "aodh-k8s"
+  name                 = "aodh"
+  model                = juju_model.sunbeam.name
+  channel              = var.telemetry-channel
+  rabbitmq             = module.rabbitmq.name
+  mysql                = var.many-mysql ? module.mysql-telemetry[0].name["aodh"] : "mysql"
+  keystone             = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
+}
+
+module "gnocchi" {
+  count                = var.enable-telemetry ? 1 : 0
+  source               = "./modules/openstack-api"
+  charm                = "gnocchi-k8s"
+  name                 = "gnocchi"
+  model                = juju_model.sunbeam.name
+  channel              = var.telemetry-channel
+  mysql                = var.many-mysql ? module.mysql-telemetry[0].name["gnocchi"] : "mysql"
+  keystone             = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik.name
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
+  resource-configs = {
+    ceph-osd-replication-count = var.ceph-osd-replication-count
+  }
+}
+
+# juju integrate gnocchi microceph
+resource "juju_integration" "gnocchi-to-ceph" {
+  count = var.enable-telemetry ? length(data.juju_offer.microceph) : 0
+  model = juju_model.sunbeam.name
+  application {
+    name     = module.gnocchi[count.index].name
+    endpoint = "ceph"
+  }
+  application {
+    offer_url = data.juju_offer.microceph[count.index].url
+  }
+}
+
+resource "juju_application" "ceilometer" {
+  count = var.enable-telemetry ? 1 : 0
+  name  = "ceilometer"
+  model = juju_model.sunbeam.name
+
+  charm {
+    name    = "ceilometer-k8s"
+    channel = var.telemetry-channel
+    series  = "jammy"
+  }
+
+  units = var.ha-scale
+}
+
+resource "juju_integration" "ceilometer-to-rabbitmq" {
+  count = var.enable-telemetry ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.ceilometer[count.index].name
+    endpoint = "amqp"
+  }
+
+  application {
+    name     = module.rabbitmq.name
+    endpoint = "amqp"
+  }
+}
+
+resource "juju_integration" "ceilometer-to-keystone" {
+  count = var.enable-telemetry ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.keystone.name
+    endpoint = "identity-credentials"
+  }
+
+  application {
+    name     = juju_application.ceilometer[count.index].name
+    endpoint = "identity-credentials"
+  }
+}
