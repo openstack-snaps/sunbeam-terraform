@@ -104,5 +104,5 @@ variable "enable-heat" {
 # Temporary channel for heat until 2023.1/stable is released.
 variable "heat-channel" {
   description = "Operator channel for OpenStack Heat deployment"
-  default     = "latest/edge"
+  default     = "2023.1/edge"
 }

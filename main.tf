@@ -341,6 +341,7 @@ module "heat" {
   rabbitmq             = module.rabbitmq.name
   mysql                = var.many-mysql ? module.mysql-heat[0].name["heat"] : "mysql"
   keystone             = module.keystone.name
+  keystone-ops         = module.keystone.name
   ingress-internal     = juju_application.traefik.name
   ingress-public       = juju_application.traefik.name
   scale                = var.os-api-scale
@@ -357,6 +358,7 @@ module "heat-cfn" {
   rabbitmq             = module.rabbitmq.name
   mysql                = var.many-mysql ? module.mysql-heat[0].name["heat"] : "mysql"
   keystone             = module.keystone.name
+  keystone-ops         = module.keystone.name
   ingress-internal     = juju_application.traefik.name
   ingress-public       = juju_application.traefik.name
   scale                = var.os-api-scale

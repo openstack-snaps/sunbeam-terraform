@@ -129,6 +129,21 @@ resource "juju_integration" "service-to-keystone" {
   }
 }
 
+resource "juju_integration" "service-to-keystone-ops" {
+  for_each = var.keystone-ops == "" ? {} : { target = var.keystone-ops }
+  model    = var.model
+
+  application {
+    name     = each.value
+    endpoint = "identity-ops"
+  }
+
+  application {
+    name     = juju_application.service.name
+    endpoint = "identity-ops"
+  }
+}
+
 # juju integrate traefik-public glance
 resource "juju_integration" "traefik-public-to-service" {
   for_each = var.ingress-public == "" ? {} : { target = var.ingress-public }
