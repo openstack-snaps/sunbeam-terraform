@@ -78,7 +78,8 @@ module "glance" {
   scale                = var.enable-ceph ? var.os-api-scale : 1
   mysql-router-channel = var.mysql-router-channel
   resource-configs = {
-    ceph-osd-replication-count = var.ceph-osd-replication-count
+    ceph-osd-replication-count     = var.ceph-osd-replication-count
+    enable-telemetry-notifications = var.enable-telemetry
   }
 }
 
@@ -88,11 +89,15 @@ module "keystone" {
   name                 = "keystone"
   model                = juju_model.sunbeam.name
   channel              = var.openstack-channel
+  rabbitmq             = module.rabbitmq.name
   mysql                = module.mysql.name["keystone"]
   ingress-internal     = juju_application.traefik.name
   ingress-public       = juju_application.traefik.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  resource-configs = {
+    enable-telemetry-notifications = var.enable-telemetry
+  }
 }
 
 module "nova" {
@@ -281,7 +286,8 @@ module "cinder-ceph" {
   ingress-public   = ""
   scale            = var.ha-scale
   resource-configs = {
-    ceph-osd-replication-count = var.ceph-osd-replication-count
+    ceph-osd-replication-count     = var.ceph-osd-replication-count
+    enable-telemetry-notifications = var.enable-telemetry
   }
   mysql-router-channel = var.mysql-router-channel
 }
